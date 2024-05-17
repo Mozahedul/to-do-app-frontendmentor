@@ -3,7 +3,7 @@ import "./App.css";
 function App() {
   return (
     <>
-      <div>mozahedul Islam</div>
+      <h1 className="font-bold bg-light-gray">mozahedul Islam</h1>
     </>
   );
 }

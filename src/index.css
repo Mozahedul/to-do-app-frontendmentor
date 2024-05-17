@@ -2,12 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  margin: 0;
-  padding: 0;
-}
-
-* {
-  margin: 0;
-  
+@layer components {
+  body {
+    @apply m-0 p-0 bg-[url("/images/bg-desktop-dark.jpg")] bg-no-repeat;
+  }
+  * {
+    @apply m-0 p-0;
+  }
 }
