@@ -10,10 +10,33 @@ function App() {
   const [completedTodos, setCompletedTodos] = useState([]);
   const [inputValue, setInputValue] = useState("");
   const [activeFilter, setActiveFilter] = useState("");
-
   const [errorMsg, setErrorMsg] = useState("");
+  // const [imgSrc, setImgSrc] = useState("");
 
   console.log("ACTIVE FILTER ==> ", activeFilter);
+
+  /**
+   * chenge the background images based on the device viewport width
+   * set teh background image in th body
+   */
+  const handleResponsiveImage = () => {
+    const viewportWidth =
+      window.innerWidth || document.documentElement.clientWidth;
+    if (viewportWidth < 576 && localStorage.theme === "dark") {
+      document.body.style.backgroundImage = `url("/images/bg-mobile-dark.jpg")`;
+    }
+
+    if (viewportWidth < 576 && localStorage.theme === "light") {
+      document.body.style.backgroundImage = `url("/images/bg-mobile-light.jpg")`;
+    }
+    if (viewportWidth >= 576 && localStorage.theme === "dark") {
+      document.body.style.backgroundImage = `url("/images/bg-desktop-dark.jpg")`;
+    }
+
+    if (viewportWidth >= 576 && localStorage.theme === "light") {
+      document.body.style.backgroundImage = `url("/images/bg-desktop-light.jpg")`;
+    }
+  };
 
   const handleInputChange = e => {
     setInputValue(e.target.value);
@@ -139,6 +162,7 @@ function App() {
    *
    */
   const handleToggleTheme = () => {
+    // Toggle the dark mode images
     if (localStorage.theme === "dark") {
       localStorage.theme = "light";
       document.documentElement.classList.remove("dark");
@@ -150,6 +174,11 @@ function App() {
       document.documentElement.classList.add("dark");
       imgRef.current.src = "/images/icon-sun.svg";
     }
+
+    /**
+     * Change background images based on device viewport width
+     */
+    handleResponsiveImage();
   };
 
   /**
@@ -168,16 +197,30 @@ function App() {
     setActiveFilter("all");
   }, []);
 
+  useEffect(() => {
+    // For changing the background image according to viewport width
+    handleResponsiveImage();
+
+    // change the background image when resize browser window
+    window.addEventListener("resize", handleResponsiveImage);
+    return () => {
+      window.removeEventListener("resize", handleResponsiveImage);
+    };
+  }, []);
+
   return (
-    <div className="w-[480px]">
+    <div className="px-4 mt-8 w-[320px] sm:w-[480px]">
+      {/* Header section */}
       <header className="flex justify-between mb-10">
-        <h1 className="text-4xl uppercase font-bold text-gray-50 tracking-[12px]">
+        <h1 className="text-2xl sm:text-4xl uppercase font-bold text-gray-50 tracking-[12px]">
           todo
         </h1>
         <button type="button" onClick={() => handleToggleTheme()}>
           <img ref={imgRef} src="/images/icon-moon.svg" alt="moon icon" />
         </button>
       </header>
+
+      {/* Main content section */}
       <main>
         {errorMsg.length > 0 ? (
           <div className="w-full text-center p-2 tracking-wider font-semibold bg-gray-300 mb-2 rounded-sm text-sm text-red-600">
@@ -186,6 +229,8 @@ function App() {
         ) : (
           ""
         )}
+
+        {/* Todo submit form */}
         <form
           onSubmit={handleSubmit}
           className="bg-white py-3 px-4 flex items-center rounded-md shadow-sm dark:bg-dark-desaturated-blue-dth"
@@ -252,9 +297,9 @@ function App() {
               </div>
             ))}
             {/* Bottom settings button */}
-            <div className="flex items-center justify-between p-3 text-sm text-gray-700 font-lg dark:text-gray-200">
-              <span>{`${handleItemsLeft()} items left`}</span>
-              <div className="flex item-center justify-center">
+            <div className="flex items-center flex-wrap justify-between p-3 text-sm text-dark-grayish-blue-dth font-lg dark:text-gray-200">
+              <span className="order-1">{`${handleItemsLeft()} items left`}</span>
+              <div className="flex item-center justify-center order-3 sm:order-2  flex-grow mt-3 sm:mt-0 pt-2 sm:pt-0 border-t-[1px] border-solid dark:border-t-dark-grayish-blue-two-dth sm:border-none">
                 <button
                   className={` ${
                     activeFilter === "all"
@@ -290,7 +335,7 @@ function App() {
                 </button>
               </div>
               <button
-                className={`${
+                className={`order-2 sm:order-3 ${
                   activeFilter === "clearCompleted"
                     ? "text-bright-blue-lth"
                     : ""

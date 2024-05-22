@@ -4,7 +4,7 @@
 
 @layer components {
   body {
-    @apply m-0 p-0 bg-[url("/images/bg-desktop-light.jpg")] bg-no-repeat w-screen h-screen grid content-center justify-items-center font-font-josefin dark:bg-dark-blue-dth;
+    @apply m-0 p-0 bg-no-repeat bg-top bg-contain w-screen h-screen grid  overflow-x-hidden justify-items-center font-font-josefin dark:bg-dark-blue-dth;
   }
   * {
     @apply m-0 p-0;
