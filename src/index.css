@@ -4,9 +4,43 @@
 
 @layer components {
   body {
-    @apply m-0 p-0 bg-[url("/images/bg-desktop-dark.jpg")] bg-no-repeat w-screen h-screen grid content-center justify-items-center font-font-josefin;
+    @apply m-0 p-0 bg-[url("/images/bg-desktop-light.jpg")] bg-no-repeat w-screen h-screen grid content-center justify-items-center font-font-josefin dark:bg-dark-blue-dth;
   }
   * {
     @apply m-0 p-0;
+  }
+
+  .img-close:hover {
+    filter: invert(41%) sepia(97%) saturate(1467%) hue-rotate(0deg)
+      brightness(97%) contrast(101%);
+  }
+
+  /* Custom checkmark styling */
+  .custom-checkbox {
+    @apply relative select-none;
+  }
+
+  .custom-checkbox input {
+    @apply absolute w-0 h-0 opacity-0;
+  }
+
+  .custom-checkbox .checkmark {
+    @apply w-6 h-6 border-2 border-solid border-light-grayish-blue-lth dark:border-dark-grayish-blue-two-dth absolute left-0 top-1/2 -translate-y-1/2 translate-x-0 rounded-full cursor-pointer transition duration-500 hover:border-bright-blue-lth;
+  }
+
+  .custom-checkbox .checkmark:after {
+    @apply absolute w-1 h-2 border-t-0 border-r-2 border-b-2 border-l-0 border-solid border-light-gray-lth rotate-45 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden;
+  }
+
+  .custom-checkbox input:checked ~ .checkmark {
+    @apply border-none bg-gradient-to-b  from-gradient-color-1 to-gradient-color-2;
+  }
+
+  .custom-checkbox input:checked ~ .checkmark:after {
+    @apply block;
+  }
+
+  .active {
+    @apply text-bright-blue-lth;
   }
 }
