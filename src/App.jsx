@@ -13,7 +13,7 @@ function App() {
   const [errorMsg, setErrorMsg] = useState("");
   // const [imgSrc, setImgSrc] = useState("");
 
-  console.log("ACTIVE FILTER ==> ", activeFilter);
+  console.log("COMPLTED TODOS ==> ", completedTodos);
 
   /**
    * chenge the background images based on the device viewport width
@@ -47,13 +47,21 @@ function App() {
 
   const handleSubmit = event => {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    // const form = new FormData(event.currentTarget);
+    // Check a user is inserting any value or not
     if (inputValue.length > 0) {
+      console.log("INPUT VALUE ==> ", inputValue);
+
+      // If an user inserted any value then check the value
+      // is already in the todo list or not
       if (!todos.includes(inputValue)) {
-        const newTodos = [...todos, form.get("todo")];
+        const newTodos = [...todos, inputValue];
         setTodos(newTodos);
         setallFilteredTodos(newTodos);
         setInputValue("");
+        // Set todo, and filtered values to local storage
+        localStorage.setItem("todos", JSON.stringify(newTodos));
+        localStorage.setItem("allFilteredTodos", JSON.stringify(newTodos));
       } else {
         setErrorMsg("Your entered todo already exists");
       }
@@ -65,39 +73,81 @@ function App() {
   // Remove todo from the list
   const handleRemove = todo => {
     // Remove from all todo list
-    const newTodos = todos.filter(item => item !== todo);
+    const newTodos =
+      todos.length > 0 ? todos.filter(item => item !== todo) : [];
     setTodos(newTodos);
+    localStorage.setItem("todos", JSON.stringify(newTodos));
+
+    // Remove a single todo from all todo list of local storage
 
     // Remove from filtered todo list
-    const newFilteredTodos = allFilteredTodos.filter(item => item !== todo);
+    const newFilteredTodos =
+      allFilteredTodos.length > 0 &&
+      allFilteredTodos.filter(item => item !== todo);
     setallFilteredTodos(newFilteredTodos);
+    localStorage.setItem("allFilteredTodos", JSON.stringify(newFilteredTodos));
 
     // remove from checked or active tood list
     if (checkedTodos.length > 0) {
-      const filteredCheckList = checkedTodos.filter(list => list !== todo);
+      const filteredCheckList =
+        checkedTodos.length > 0 && checkedTodos.filter(list => list !== todo);
       setCheckedTodos(filteredCheckList);
+      localStorage.setItem("checkedTodos", JSON.stringify(filteredCheckList));
     }
 
     // remove from completed todo list
     if (completedTodos.length > 0) {
-      const filteredCheckList = completedTodos.filter(list => list !== todo);
+      const filteredCheckList =
+        completedTodos.length > 0 &&
+        completedTodos.filter(list => list !== todo);
       setCompletedTodos(filteredCheckList);
+      localStorage.setItem("completedTodos", JSON.stringify(filteredCheckList));
     }
 
+    // Move to all todo list when the last item is removed
     if (completedTodos.length === 1) {
       setallFilteredTodos(newTodos);
+      localStorage.setItem("filteredTodos", JSON.stringify(newTodos));
     }
   };
 
   // handle checkbox for active todos
   const handleCheck = (event, todo) => {
+    // if any todo is checked
     if (event.target.checked) {
       setCheckedTodos([...checkedTodos, todo]);
+
+      // Update checked/active todos in localStorage
+      const checkedLocalStg = localStorage.getItem("checkedTodos");
+      const checkedTodosLocalStg = checkedLocalStg
+        ? JSON.parse(checkedLocalStg)
+        : [];
+      const modifiedTodo = [...checkedTodosLocalStg, todo];
+      localStorage.setItem("checkedTodos", JSON.stringify(modifiedTodo));
     } else {
-      const filteredTodos = checkedTodos.filter(
-        checkedTodo => checkedTodo !== todo
-      );
+      // If any todo is unchecked
+      const filteredTodos =
+        checkedTodos.length > 0
+          ? checkedTodos.filter(checkedTodo => checkedTodo !== todo)
+          : [];
+
+      // If any completed todo in unchecked
+      const filteredCompletedTodos =
+        completedTodos.length > 0
+          ? completedTodos.filter(compTodo => compTodo !== todo)
+          : [];
+
       setCheckedTodos(filteredTodos);
+      setCompletedTodos(filteredCompletedTodos);
+
+      /**
+       * Save checked/active todos in localStorage
+       */
+      localStorage.setItem("checkedTodos", JSON.stringify(filteredTodos));
+      localStorage.setItem(
+        "completedTodos",
+        JSON.stringify(filteredCompletedTodos)
+      );
     }
   };
 
@@ -117,11 +167,25 @@ function App() {
 
   // Handle completed todos
   const handleCompletedTodos = () => {
+    console.log("todo completed = => ", completedTodos);
+
     const todoCompleted = [...completedTodos, ...checkedTodos];
+    console.log("completed todo inside an handler ==> ", todoCompleted);
+
     if (checkedTodos.length > 0) {
       setCompletedTodos(todoCompleted);
       setallFilteredTodos(todoCompleted);
       setCheckedTodos([]);
+
+      /**
+       * set completed todos to localStorage
+       * set filtered todos to localStorage
+       * set checked todos to local storage
+       */
+
+      localStorage.setItem("completedTodos", JSON.stringify(todoCompleted));
+      localStorage.setItem("allFilteredTodos", JSON.stringify(todoCompleted));
+      localStorage.setItem("checkedTodos", JSON.stringify([]));
     } else {
       if (todoCompleted.length > 0) {
         setallFilteredTodos(todoCompleted);
@@ -132,14 +196,23 @@ function App() {
 
   // Clear all completed todos
   const handleClearCompleted = () => {
-    const completedFilteredTodos = todos.filter(
-      item => !completedTodos.includes(item)
-    );
+    // Remove completed todos from local state
+    const completedFilteredTodos =
+      todos.length > 0 && todos.filter(item => !completedTodos.includes(item));
 
     setallFilteredTodos(completedFilteredTodos);
     setTodos(completedFilteredTodos);
+
+    // Remove from completedTodos, todos,  local storage
+    localStorage.setItem(
+      "allFilteredTodos",
+      JSON.stringify(completedFilteredTodos)
+    );
+    localStorage.setItem("todos", JSON.stringify(completedFilteredTodos));
+
     if (completedTodos.length > 0) {
       setCompletedTodos([]);
+      localStorage.setItem("compltedTodos", JSON.stringify([]));
     }
 
     setActiveFilter("clearCompleted");
@@ -208,6 +281,56 @@ function App() {
     };
   }, []);
 
+  // Fetch data from the local storage
+  useEffect(() => {
+    /**
+     * Fetch todos from the local storage
+     * update the local state with setTodos
+     */
+    const todoLocalStorage = localStorage.getItem("todos");
+    const todoData = todoLocalStorage ? JSON.parse(todoLocalStorage) : [];
+
+    console.log("TODO DATA => ", todoData);
+
+    if (todoData) {
+      setTodos(todoData);
+      setallFilteredTodos(todoData);
+    }
+
+    /**
+     * Fetch filtered todos from the local storage
+     * update the local state with setallFilteredTodos
+     */
+    // const filteredTodosLocalStorage = localStorage.getItem("allFilteredTodos");
+    // const filteredTodos = filteredTodosLocalStorage
+    //   ? JSON.parse(filteredTodosLocalStorage)
+    //   : [];
+
+    // if (filteredTodos) {
+    //   setallFilteredTodos(filteredTodos);
+    // }
+
+    /**
+     * Fetch checked todos from the local storage
+     * update the local state with setCheckedTodos
+     */
+    const checkedTodosLocalStg = localStorage.getItem("checkedTodos");
+    const checkedTodosParsed = checkedTodosLocalStg
+      ? JSON.parse(checkedTodosLocalStg)
+      : [];
+    setCheckedTodos(checkedTodosParsed);
+
+    /**
+     * Fetch completed todos from the local storage
+     * update the local state with setallFilteredTodos
+     */
+    const checkedCompTodosLocalStg = localStorage.getItem("completedTodos");
+    const checkedCompTodosParsed = checkedCompTodosLocalStg
+      ? JSON.parse(checkedCompTodosLocalStg)
+      : [];
+    setCompletedTodos(checkedCompTodosParsed);
+  }, []);
+
   return (
     <div className="px-4 mt-8 w-[320px] sm:w-[480px]">
       {/* Header section */}
@@ -251,6 +374,8 @@ function App() {
           </button>
         </form>
 
+        {/* Show message if no active todo, and completed todo exist */}
+
         {/* To do list */}
         {Array.isArray(allFilteredTodos) && allFilteredTodos.length > 0 ? (
           <div className="my-5 bg-white shadow-lg rounded-md dark:bg-dark-desaturated-blue-dth border-[1px] border-solid border-gray-50 dark:border-none">
@@ -268,14 +393,16 @@ function App() {
                     checked={
                       checkedTodos.length > 0
                         ? checkedTodos.includes(todo)
-                        : completedTodos.includes(todo)
+                        : completedTodos.length > 0
+                        ? completedTodos.includes(todo)
+                        : false
                     }
                   />
                   {/* Custom checkbox */}
                   <span className="after:content-[''] checkmark"></span>
                   <span
                     className={`pl-10 pr-3 cursor-pointer dark:text-gray-200 ${
-                      completedTodos.includes(todo)
+                      completedTodos.length > 0 && completedTodos.includes(todo)
                         ? "line-through text-gray-500 font-normal"
                         : ""
                     }`}
@@ -313,7 +440,10 @@ function App() {
                 </button>
                 <button
                   type="button"
-                  className={`px-3 ${
+                  disabled={checkedTodos.length < 1}
+                  className={`${
+                    checkedTodos.length < 1 ? "cursor-not-allowed" : ""
+                  } px-3 ${
                     activeFilter === "active"
                       ? "text-bright-blue-lth font-bold"
                       : ""
@@ -335,7 +465,9 @@ function App() {
                 </button>
               </div>
               <button
-                className={`order-2 sm:order-3 ${
+                className={`${
+                  completedTodos.length < 1 ? "cursor-not-allowed" : ""
+                } order-2 sm:order-3 ${
                   activeFilter === "clearCompleted"
                     ? "text-bright-blue-lth"
                     : ""
