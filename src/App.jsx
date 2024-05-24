@@ -11,7 +11,10 @@ function App() {
   const [inputValue, setInputValue] = useState("");
   const [activeFilter, setActiveFilter] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+  const [draggedIndex, setDraggedIndex] = useState(null);
   // const [imgSrc, setImgSrc] = useState("");
+
+  console.log("DRAGGED INDEX ==> ", draggedIndex);
 
   console.log("COMPLTED TODOS ==> ", completedTodos);
 
@@ -255,6 +258,38 @@ function App() {
   };
 
   /**
+   * Drag and drop features to the todo lists with HTML drap and drp API
+   * handleDragStart: event handler is used to set the index
+   * of the item to the draggedIndex state that we want to drag
+   * HandleDragOver: event handler is used to prevent the default behavior
+   * to allow the drop functionality
+   * HandleDrop: event handler is used to insert the todo list item into
+   * new position and remove it from the original position
+   */
+
+  const handleDragStart = index => {
+    console.log("handle drag start index -->", index);
+
+    setDraggedIndex(index);
+  };
+
+  const handleDragOver = event => {
+    event.preventDefault();
+  };
+
+  const handleDrop = (event, index) => {
+    event.preventDefault();
+    const newFilteredTodos = [...allFilteredTodos];
+    const [draggedTodo] = newFilteredTodos.splice(draggedIndex, 1);
+    newFilteredTodos.splice(index, 0, draggedTodo);
+
+    setallFilteredTodos(newFilteredTodos);
+    localStorage.setItem("allFilteredTodos", JSON.stringify(newFilteredTodos));
+    localStorage.setItem("todos", JSON.stringify(newFilteredTodos));
+    setDraggedIndex(null);
+  };
+
+  /**
    * dark mode selection according to user's
    * system or browser's preferences
    * window.matchMedia API has been used to
@@ -379,9 +414,13 @@ function App() {
         {/* To do list */}
         {Array.isArray(allFilteredTodos) && allFilteredTodos.length > 0 ? (
           <div className="my-5 bg-white shadow-lg rounded-md dark:bg-dark-desaturated-blue-dth border-[1px] border-solid border-gray-50 dark:border-none">
-            {allFilteredTodos.map(todo => (
+            {allFilteredTodos.map((todo, index) => (
               <div
                 key={todo}
+                draggable
+                onDragStart={() => handleDragStart(index)}
+                onDragOver={event => handleDragOver(event)}
+                onDrop={event => handleDrop(event, index)}
                 className="flex justify-between items-center p-3 border-b-gray-200 border-b-[1px] dark:border-b-dark-grayish-blue-two-dth cursor-pointer group hover:bg-transparent transition duration-500"
               >
                 <label className="flex items-center custom-checkbox">
