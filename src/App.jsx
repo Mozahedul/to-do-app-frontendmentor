@@ -12,11 +12,6 @@ function App() {
   const [activeFilter, setActiveFilter] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [draggedIndex, setDraggedIndex] = useState(null);
-  // const [imgSrc, setImgSrc] = useState("");
-
-  console.log("DRAGGED INDEX ==> ", draggedIndex);
-
-  console.log("COMPLTED TODOS ==> ", completedTodos);
 
   /**
    * chenge the background images based on the device viewport width
@@ -268,8 +263,6 @@ function App() {
    */
 
   const handleDragStart = index => {
-    console.log("handle drag start index -->", index);
-
     setDraggedIndex(index);
   };
 
@@ -421,7 +414,7 @@ function App() {
                 onDragStart={() => handleDragStart(index)}
                 onDragOver={event => handleDragOver(event)}
                 onDrop={event => handleDrop(event, index)}
-                className="flex justify-between items-center p-3 border-b-gray-200 border-b-[1px] dark:border-b-dark-grayish-blue-two-dth cursor-pointer group hover:bg-transparent transition duration-500"
+                className={`flex justify-between items-center p-3 border-b-gray-200 border-b-[1px] dark:border-b-dark-grayish-blue-two-dth cursor-move group hover:bg-transparent transition duration-500`}
               >
                 <label className="flex items-center custom-checkbox">
                   {/* Default checkbox */}
